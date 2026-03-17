@@ -1,0 +1,39 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // Users collection
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isSignedIn();
+      allow update: if isOwner(userId);
+    }
+
+    // Products collection
+    match /products/{productId} {
+      allow read: if true; // Everyone can read products
+      allow write: if false; // Only admin via SDK (manually) can write
+    }
+
+    // Orders collection
+    match /orders/{orderId} {
+      allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || request.auth.token.admin == true);
+      allow create: if isSignedIn();
+      allow update: if false; // Orders should not be modifiable by users
+    }
+    
+    // Newsletter collection
+    match /newsletter/{email} {
+      allow create: if true;
+      allow read, update, delete: if false;
+    }
+  }
+}
