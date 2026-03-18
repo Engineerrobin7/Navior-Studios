@@ -5,9 +5,13 @@ service cloud.firestore {
     function isSignedIn() {
       return request.auth != null;
     }
-    
+
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && request.auth.token.admin == true;
     }
 
     // Users collection
@@ -20,20 +24,20 @@ service cloud.firestore {
     // Products collection
     match /products/{productId} {
       allow read: if true; // Everyone can read products
-      allow write: if false; // Only admin via SDK (manually) can write
+      allow write: if isAdmin(); // Only admin can write (server-side operations use Admin SDK)
     }
 
     // Orders collection
     match /orders/{orderId} {
-      allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || request.auth.token.admin == true);
+      allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
       allow create: if isSignedIn();
-      allow update: if false; // Orders should not be modifiable by users
+      allow update: if isAdmin(); // Only admin can update orders (server-side operations use Admin SDK)
     }
-    
+
     // Newsletter collection
     match /newsletter/{email} {
       allow create: if true;
-      allow read, update, delete: if false;
+      allow read, update, delete: if isAdmin();
     }
   }
 }

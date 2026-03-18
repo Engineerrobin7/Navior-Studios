@@ -6,7 +6,9 @@ import {
   User, 
   signOut as firebaseSignOut,
   isSignInWithEmailLink,
-  signInWithEmailLink
+  signInWithEmailLink,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword
 } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
@@ -16,6 +18,8 @@ interface AuthContextType {
   loading: boolean;
   userData: any | null;
   signOut: () => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
+  signup: (email: string, password: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -23,6 +27,8 @@ const AuthContext = createContext<AuthContextType>({
   loading: true,
   userData: null,
   signOut: async () => {},
+  login: async () => {},
+  signup: async () => {},
 });
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -94,8 +100,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     await firebaseSignOut(auth);
   };
 
+  const login = async (email: string, password: string) => {
+    await signInWithEmailAndPassword(auth, email, password);
+  };
+
+  const signup = async (email: string, password: string) => {
+    await createUserWithEmailAndPassword(auth, email, password);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, userData, signOut }}>
+    <AuthContext.Provider value={{ user, loading, userData, signOut, login, signup }}>
       {children}
     </AuthContext.Provider>
   );

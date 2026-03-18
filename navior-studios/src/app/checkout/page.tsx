@@ -13,10 +13,17 @@ import { motion, AnimatePresence } from "framer-motion";
 
 const CheckoutPage = () => {
   const { cart, getTotal, clearCart } = useCartStore();
-  const { user, userData } = useAuth();
+  const { user, userData, login, signup } = useAuth();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [paymentStep, setPaymentStep] = useState(1); // 1: Shipping, 2: Payment, 3: Success
+  const [paymentStep, setPaymentStep] = useState(user ? 2 : 1); // 1: Auth, 2: Shipping, 3: Payment, 4: Success
+
+  const [authData, setAuthData] = useState({
+    email: "",
+    password: "",
+    confirmPassword: "",
+    isLogin: true,
+  });
 
   const [shippingData, setShippingData] = useState({
     name: userData?.displayName || "",
@@ -29,10 +36,37 @@ const CheckoutPage = () => {
   });
 
   useEffect(() => {
-    if (cart.length === 0 && paymentStep !== 3) {
+    if (cart.length === 0 && paymentStep !== 4) {
       router.push("/collection");
     }
   }, [cart, router, paymentStep]);
+
+  const handleAuthInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setAuthData({ ...authData, [e.target.name]: e.target.value });
+  };
+
+  const handleAuthSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      if (authData.isLogin) {
+        await login(authData.email, authData.password);
+      } else {
+        if (authData.password !== authData.confirmPassword) {
+          alert("Passwords don't match");
+          setLoading(false);
+          return;
+        }
+        await signup(authData.email, authData.password);
+      }
+      setPaymentStep(2); // Move to shipping after successful auth
+    } catch (error: any) {
+      alert(error.message || "Authentication failed");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setShippingData({ ...shippingData, [e.target.name]: e.target.value });
@@ -98,8 +132,26 @@ const CheckoutPage = () => {
             });
 
             if (verifyRes.data.message === "Payment verified successfully") {
+              // Update order status to completed
+              const { db } = await import("@/lib/firebase");
+              const { collection, query, where, getDocs, updateDoc } = await import("firebase/firestore");
+              
+              const ordersRef = collection(db, "orders");
+              const q = query(ordersRef, where("razorpayOrderId", "==", response.razorpay_order_id));
+              const querySnapshot = await getDocs(q);
+              
+              if (!querySnapshot.empty) {
+                const orderDoc = querySnapshot.docs[0];
+                await updateDoc(orderDoc.ref, {
+                  paymentStatus: "completed",
+                  razorpayPaymentId: response.razorpay_payment_id,
+                  razorpaySignature: response.razorpay_signature,
+                  completedAt: new Date().toISOString(),
+                });
+              }
+              
               clearCart();
-              setPaymentStep(3);
+              setPaymentStep(4);
             } else {
               alert("Payment verification failed. Please contact support.");
             }
@@ -155,6 +207,80 @@ const CheckoutPage = () => {
                 >
                   <div className="flex items-center space-x-4 mb-8">
                     <div className="w-10 h-10 bg-white text-black rounded-full flex items-center justify-center font-bold">1</div>
+                    <h2 className="text-2xl font-bold tracking-tight">Account</h2>
+                  </div>
+
+                  <form onSubmit={handleAuthSubmit} className="space-y-6">
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <label className="text-[10px] uppercase tracking-widest font-bold text-white/40">Email Address</label>
+                        <input
+                          type="email"
+                          name="email"
+                          value={authData.email}
+                          onChange={handleAuthInputChange}
+                          required
+                          className="w-full bg-white/5 border border-white/10 rounded-xl py-4 px-6 focus:outline-none focus:border-white/20"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] uppercase tracking-widest font-bold text-white/40">Password</label>
+                        <input
+                          type="password"
+                          name="password"
+                          value={authData.password}
+                          onChange={handleAuthInputChange}
+                          required
+                          className="w-full bg-white/5 border border-white/10 rounded-xl py-4 px-6 focus:outline-none focus:border-white/20"
+                        />
+                      </div>
+                      {!authData.isLogin && (
+                        <div className="space-y-2">
+                          <label className="text-[10px] uppercase tracking-widest font-bold text-white/40">Confirm Password</label>
+                          <input
+                            type="password"
+                            name="confirmPassword"
+                            value={authData.confirmPassword}
+                            onChange={handleAuthInputChange}
+                            required
+                            className="w-full bg-white/5 border border-white/10 rounded-xl py-4 px-6 focus:outline-none focus:border-white/20"
+                          />
+                        </div>
+                      )}
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="w-full py-5 bg-white text-black font-black uppercase tracking-[0.2em] text-xs rounded-xl flex items-center justify-center space-x-3 hover:bg-white/90 transition-all disabled:opacity-50"
+                    >
+                      {loading ? (
+                        <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <span>{authData.isLogin ? "Sign In" : "Create Account"}</span>
+                      )}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setAuthData({ ...authData, isLogin: !authData.isLogin })}
+                      className="w-full text-center text-white/40 hover:text-white transition-colors text-sm"
+                    >
+                      {authData.isLogin ? "Need an account? Create one" : "Already have an account? Sign in"}
+                    </button>
+                  </form>
+                </motion.div>
+              )}
+
+              {paymentStep === 2 && (
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  className="space-y-8"
+                >
+                  <div className="flex items-center space-x-4 mb-8">
+                    <div className="w-10 h-10 bg-white text-black rounded-full flex items-center justify-center font-bold">2</div>
                     <h2 className="text-2xl font-bold tracking-tight">Shipping Information</h2>
                   </div>
 
@@ -207,7 +333,7 @@ const CheckoutPage = () => {
                   </div>
 
                   <button
-                    onClick={() => setPaymentStep(2)}
+                    onClick={() => setPaymentStep(3)}
                     className="w-full py-5 bg-white text-black font-black uppercase tracking-[0.2em] text-xs rounded-xl flex items-center justify-center space-x-3 hover:bg-white/90 transition-all"
                   >
                     <span>Proceed to Payment</span>
@@ -216,7 +342,7 @@ const CheckoutPage = () => {
                 </motion.div>
               )}
 
-              {paymentStep === 2 && (
+              {paymentStep === 3 && (
                 <motion.div
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -225,10 +351,10 @@ const CheckoutPage = () => {
                 >
                   <div className="flex items-center space-x-4 mb-8">
                     <button 
-                      onClick={() => setPaymentStep(1)}
+                      onClick={() => setPaymentStep(2)}
                       className="w-10 h-10 bg-white/10 text-white rounded-full flex items-center justify-center font-bold"
-                    >1</button>
-                    <div className="w-10 h-10 bg-white text-black rounded-full flex items-center justify-center font-bold">2</div>
+                    >2</button>
+                    <div className="w-10 h-10 bg-white text-black rounded-full flex items-center justify-center font-bold">3</div>
                     <h2 className="text-2xl font-bold tracking-tight">Payment Method</h2>
                   </div>
 
@@ -264,7 +390,7 @@ const CheckoutPage = () => {
                 </motion.div>
               )}
 
-              {paymentStep === 3 && (
+              {paymentStep === 4 && (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
