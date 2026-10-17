@@ -1,0 +1,35 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Lead {
+  id         String   @id @default(uuid())
+  websiteUrl String
+  bottleneck String
+  clientName String
+  email      String
+  phone      String?
+  status     String   @default("NEW")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  audits     Audit[]
+
+  @@map("leads")
+}
+
+model Audit {
+  id               String   @id @default(uuid())
+  leadId           String
+  lead             Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  performanceScore Int
+  loadTimeMs       Int
+  summary          String
+  createdAt        DateTime @default(now())
+
+  @@map("audits")
+}
