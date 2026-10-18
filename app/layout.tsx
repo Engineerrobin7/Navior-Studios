@@ -23,7 +23,7 @@ export const viewport: Viewport = {
   maximumScale: 5,
 };
 
-export const siteConfig = {
+const siteConfig = {
   name: "Navior Studios",
   domain: "naviorstudios.store",
   url: "https://naviorstudios.store",
