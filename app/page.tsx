@@ -3,6 +3,8 @@
 import React, { useState } from "react";
 import Navbar from "@/components/layout/Navbar";
 import Hero from "@/components/layout/Hero";
+import GlobalPresence from "@/components/layout/GlobalPresence";
+import IndustryVerticals from "@/components/layout/IndustryVerticals";
 import CaseStudies from "@/components/layout/CaseStudies";
 import Services from "@/components/layout/Services";
 import TechConfigurator from "@/components/layout/TechConfigurator";
@@ -24,16 +26,22 @@ export default function Home() {
       {/* Sticky Top Navbar */}
       <Navbar onOpenAuditModal={handleOpenAuditModal} />
 
-      {/* Hero Section with Quick Scoping Tool */}
+      {/* Hero Core Section with Scope & RFP Matrix */}
       <Hero onOpenAuditModal={handleOpenAuditModal} />
 
-      {/* Client Case Studies Showcase */}
+      {/* Global Delivery Model & 24/7 NOC Centers */}
+      <GlobalPresence />
+
+      {/* Industry Vertical Solutions (FinTech, Healthcare, Logistics, Retail, SaaS) */}
+      <IndustryVerticals onOpenAuditModal={handleOpenAuditModal} />
+
+      {/* Verified Client Case Studies Showcase */}
       <CaseStudies onOpenAuditModal={handleOpenAuditModal} />
 
-      {/* Full-Spectrum IT Services Matrix */}
+      {/* Full-Spectrum IT Engineering Services */}
       <Services onOpenAuditModal={handleOpenAuditModal} />
 
-      {/* Interactive 4-Step Tech Stack Configurator Funnel */}
+      {/* Interactive 4-Step Tech Stack Configurator Funnel & PDF Spec */}
       <TechConfigurator onOpenAuditModal={handleOpenAuditModal} />
 
       {/* Architectural Benchmarks Comparison Table */}
@@ -42,19 +50,19 @@ export default function Home() {
       {/* Enterprise Tech Stack Grid */}
       <TechStack />
 
-      {/* Flexible Engagement Models */}
+      {/* Flexible Engagement Models (Dedicated Squads, Turnkey Scope, Advisory) */}
       <EngagementModels onOpenAuditModal={handleOpenAuditModal} />
 
       {/* 4-Step Engineering Delivery Pipeline */}
       <AuditProcess onOpenAuditModal={handleOpenAuditModal} />
 
-      {/* Consultation & Discovery Lead Modal */}
+      {/* RFP Proposal Submission Modal */}
       <AuditModal
         isOpen={isAuditModalOpen}
         onClose={handleCloseAuditModal}
       />
 
-      {/* Agency Footer */}
+      {/* Corporate Footer */}
       <Footer onOpenAuditModal={handleOpenAuditModal} />
     </main>
   );

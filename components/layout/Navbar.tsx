@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, ArrowRight, Calendar, Lock } from "lucide-react";
+import { Menu, X, ArrowRight, FileText, Lock, Globe } from "lucide-react";
 import Logo from "@/components/ui/Logo";
 
 interface NavbarProps {
@@ -22,10 +22,11 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuditModal }) => {
   }, []);
 
   const navLinks = [
+    { name: "Industries", href: "#solutions" },
     { name: "Services", href: "#services" },
     { name: "Case Studies", href: "#case-studies" },
+    { name: "Global Delivery", href: "#global-presence" },
     { name: "Tech Stack", href: "#tech-stack" },
-    { name: "Engagement Models", href: "#engagement" },
   ];
 
   return (
@@ -38,13 +39,13 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuditModal }) => {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
-          {/* Brand Logo Component */}
+          {/* Brand Logo */}
           <a href="#" className="focus:outline-none">
             <Logo size={36} />
           </a>
 
-          {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center gap-7">
+          {/* Desktop Navigation */}
+          <nav className="hidden lg:flex items-center gap-6">
             {navLinks.map((link) => (
               <a
                 key={link.name}
@@ -64,8 +65,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuditModal }) => {
             </a>
           </nav>
 
-          {/* Professional Action CTA */}
-          <div className="hidden md:flex items-center gap-4">
+          {/* High-Contrast Action CTA */}
+          <div className="hidden lg:flex items-center gap-4">
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
@@ -73,17 +74,17 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuditModal }) => {
               className="relative inline-flex items-center justify-center px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-xl transition-all duration-200 shadow-[0_0_20px_rgba(37,99,235,0.35)] hover:shadow-[0_0_30px_rgba(59,130,246,0.5)] border border-blue-400/30"
             >
               <span className="relative z-10 flex items-center gap-2">
-                <Calendar className="w-4 h-4" />
-                Schedule Tech Discovery
+                <FileText className="w-4 h-4" />
+                Submit Enterprise RFP
                 <ArrowRight className="w-4 h-4" />
               </span>
             </motion.button>
           </div>
 
-          {/* Mobile Menu Toggle */}
+          {/* Mobile Menu Toggle Button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 rounded-lg border border-white/10 text-slate-300 hover:text-white hover:bg-white/5 focus:outline-none"
+            className="lg:hidden p-2 rounded-lg border border-white/10 text-slate-300 hover:text-white hover:bg-white/5 focus:outline-none"
             aria-label="Toggle Navigation Menu"
           >
             {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -91,7 +92,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuditModal }) => {
         </div>
       </div>
 
-      {/* Mobile Drawer Navigation */}
+      {/* Mobile Menu Drawer */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
@@ -99,7 +100,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuditModal }) => {
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.25 }}
-            className="md:hidden bg-[#090d16]/95 backdrop-blur-xl border-b border-white/10 px-4 pt-4 pb-6 mt-3"
+            className="lg:hidden bg-[#090d16]/95 backdrop-blur-xl border-b border-white/10 px-4 pt-4 pb-6 mt-3"
           >
             <div className="flex flex-col gap-4">
               {navLinks.map((link) => (
@@ -127,7 +128,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuditModal }) => {
                 }}
                 className="mt-2 w-full flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold text-white bg-blue-600 rounded-xl shadow-[0_0_20px_rgba(37,99,235,0.4)]"
               >
-                Schedule Tech Discovery
+                Submit Enterprise RFP
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
